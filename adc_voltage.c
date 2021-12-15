@@ -3,9 +3,8 @@
 
 #include "_dbg_.h"    
 
-void initialise_adc()
+void initialise_adc(const uint ADC)
 {
-    const uint ADC = 0;
     const float conversion_factor = 3.3f / (1 << 12);
     adc_init();
     // Make sure GPIO is high-impedance, no pullups etc
@@ -14,11 +13,12 @@ void initialise_adc()
     adc_select_input(ADC);
 }
 
-uint16_t read_adc() 
+uint16_t read_adc(const uint adc) 
 {
     const float conversion_factor = 3.3f / (1 << 12);
     uint16_t result=0;
     uint32_t runing_result=0;
+    adc_select_input(adc);
     for(uint i=0;i<16;i++)
     {
         runing_result += adc_read();

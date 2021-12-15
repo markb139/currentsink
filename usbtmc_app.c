@@ -27,93 +27,16 @@
 #include <stdlib.h>     /* atoi */
 #include "tusb.h"
 #include "bsp/board.h"
+#include "usbtmc_app.h"
 #include "main.h"
 
+extern bool process_command(uint8_t* aData, size_t aLen);
 
-#if (CFG_TUD_USBTMC_ENABLE_488)
-static usbtmc_response_capabilities_488_t const
-#else
-static usbtmc_response_capabilities_t const
-#endif
-tud_usbtmc_app_capabilities  =
-{
-    .USBTMC_status = USBTMC_STATUS_SUCCESS,
-    .bcdUSBTMC = USBTMC_VERSION,
-    .bmIntfcCapabilities =
-    {
-        .listenOnly = 0,
-        .talkOnly = 0,
-        .supportsIndicatorPulse = 1
-    },
-    .bmDevCapabilities = {
-        .canEndBulkInOnTermChar = 0
-    },
-
-#if (CFG_TUD_USBTMC_ENABLE_488)
-    .bcdUSB488 = USBTMC_488_VERSION,
-    .bmIntfcCapabilities488 =
-    {
-        .supportsTrigger = 1,
-        .supportsREN_GTL_LLO = 0,
-        .is488_2 = 1
-    },
-    .bmDevCapabilities488 =
-    {
-      .SCPI = 1,
-      .SR1 = 0,
-      .RL1 = 0,
-      .DT1 =0,
-    }
-#endif
-};
 
 #define IEEE4882_STB_QUESTIONABLE (0x08u)
 #define IEEE4882_STB_MAV          (0x10u)
 #define IEEE4882_STB_SER          (0x20u)
 #define IEEE4882_STB_SRQ          (0x40u)
-
-uint8_t count = 0;
-
-static volatile uint8_t status;
-
-// 0=not query, 1=queried, 2=delay,set(MAV), 3=delay 4=ready?
-// (to simulate delay)
-enum  _states {
-  QStart = 0,
-  QDelayStart,
-  QDelayRun,
-  QDelayEnd,
-  QSendResult
-};
-
-static volatile enum _states queryState = QStart;
-
-static volatile uint32_t queryDelayStart;
-static volatile uint32_t bulkInStarted;
-
-static volatile uint32_t iCmdResponse;
-static uint8_t const *iCmdResponseBuf;
-static size_t iCmdResponseBufLen;
-
-//static volatile uint32_t waveQuery;
-
-static uint32_t resp_delay = 125u; // Adjustable delay, to allow for better testing
-static size_t buffer_len;
-static size_t buffer_tx_ix; // for transmitting using multiple transfers
-static uint8_t buffer[225]; // A few packets long should be enough.
-
-//uint32_t *capture_buf = 0;
-
-bool process_command(uint8_t* aData, size_t aLen);
-// bool command_complete();
-
-static usbtmc_msg_dev_dep_msg_in_header_t rspMsg = {
-    .bmTransferAttributes =
-    {
-      .EOM = 1,
-      .UsingTermChar = 0
-    }
-};
 
 void tud_usbtmc_open_cb(uint8_t interface_id)
 {
@@ -132,7 +55,8 @@ tud_usbtmc_get_capabilities_cb()
 }
 
 
-bool tud_usbtmc_msg_trigger_cb(usbtmc_msg_generic_t* msg) {
+bool tud_usbtmc_msg_trigger_cb(usbtmc_msg_generic_t* msg) 
+{
   (void)msg;
   // Let trigger set the SRQ
   status |= IEEE4882_STB_SRQ;
@@ -141,13 +65,12 @@ bool tud_usbtmc_msg_trigger_cb(usbtmc_msg_generic_t* msg) {
 
 bool tud_usbtmc_msgBulkOut_start_cb(usbtmc_msg_request_dev_dep_out const * msgHeader)
 {
-  (void)msgHeader;
   buffer_len = 0;
   if(msgHeader->TransferSize > sizeof(buffer))
   {
-
     return false;
   }
+  
   return true;
 }
 
@@ -205,8 +128,6 @@ bool tud_usbtmc_msgBulkIn_complete_cb()
   return true;
 }
 
-static unsigned int msgReqLen;
-
 bool tud_usbtmc_msgBulkIn_request_cb(usbtmc_msg_request_dev_dep_in const * request)
 {
   rspMsg.header.MsgID = request->header.MsgID,
@@ -243,7 +164,7 @@ bool command_complete(uint8_t const *aBuffer, size_t aLen)
   iCmdResponse = 1;
 }
 
-void usbtmc_app_task_iter(void) {
+void usbtmc_app_task_iter() {
   switch(queryState) {
   case QStart:
     break;

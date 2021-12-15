@@ -18,8 +18,7 @@
 
 extern void initialise_pwm(uint max_pwm);
 extern void set_level();
-extern void initialise_adc();
-extern uint16_t read_adc();
+extern void initialise_adc(const uint adc);
 
 const uint16_t LED_PIN = 16;
 const uint16_t LED_PIN2 = 17;
@@ -40,7 +39,8 @@ int main(void)
   _DBG_PRINT("starting\n");
 
   initialise_pwm(2048);
-  initialise_adc();
+  initialise_adc(0);
+  initialise_adc(1);
 
   led_indicator_pulse();
 
@@ -76,20 +76,19 @@ static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 // Invoked when device is mounted
 void tud_mount_cb(void)
 {
-        _DBG_PRINT("tud_mount_cb\n");
-
+  _DBG_PRINT("tud_mount_cb\n");
   blink_interval_ms = BLINK_MOUNTED;
 }
 
 // Invoked when device is unmounted
 void tud_umount_cb(void)
 {
-        _DBG_PRINT("tud_umount_cb\n");
+  _DBG_PRINT("tud_umount_cb\n");
   blink_interval_ms = BLINK_NOT_MOUNTED;
 }
 
 // Invoked when usb bus is suspended
-// remote_wakeup_en : if host allow us  to perform remote wakeup
+// remote_wakeup_en : if host allow us to perform remote wakeup
 // Within 7ms, device must draw an average of current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en)
 {

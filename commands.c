@@ -9,38 +9,8 @@
 
 
 extern void set_level(uint level);
-extern uint16_t read_adc();
-
-static inline uint32_t tu_max32 (uint32_t x, uint32_t y) { return (x > y) ? x : y; }
-void dma_irq();
-
-#define PIN_BASE 0
-
-// #define _CMD(_CMD_STR, _STR_LEN, _FUNC) \
-//     if(aLen >=_STR_LEN && !strncasecmp(_CMD_STR, aData,_STR_LEN)) \
-//         _FUNC(aData, aLen); \
-
-void process_idn(uint8_t const *aBuffer, size_t aLen, size_t aCmdLen);
-void process_set(uint8_t const *aBuffer, size_t aLen, size_t aCmdLen);
-void process_get_set(uint8_t const *aBuffer, size_t aLen, size_t aCmdLen);
-void process_read(uint8_t const *aBuffer, size_t aLen, size_t aCmdLen);
-void process_led_set(uint8_t const *aBuffer, size_t aLen, size_t aCmdLen);
-
-typedef struct {
-    const char* name;
-    void (*func)(uint8_t const*, size_t, size_t);
-} command_t;
-
-#define _CMD(_CMD_STR, _FUNC) {_CMD_STR, _FUNC}
-
-#define CMDS 5
-command_t table[CMDS] = {
-    _CMD("*idn?", process_idn),
-    _CMD("current:set?", process_get_set),
-    _CMD("current:set", process_set),
-    _CMD("current:read?", process_read),
-    _CMD("led:set", process_led_set)
-};
+extern uint16_t read_adc(const uint adc);
+extern bool command_complete(uint8_t const *aBuffer, size_t aLen);
 
 bool process_command(uint8_t* aData, size_t aLen)
 {
@@ -85,9 +55,19 @@ void process_read(uint8_t const *aBuffer, size_t aLen, size_t aCmdLen)
 {
     uint16_t level = 0;
     double current = 0.0;
-    level = read_adc();
+    level = read_adc(0);
     current = (double)((level * 3.3) / 4096);
     sprintf(_buffer, "%f\r\n",current);
+    command_complete(_buffer, strlen(_buffer));
+}
+
+void process_voltage_read(uint8_t const *aBuffer, size_t aLen, size_t aCmdLen)
+{
+    uint16_t level = 0;
+    double voltage = 0.0;
+    level = read_adc(1);
+    voltage = (double)((level * 3.3) / 4096);
+    sprintf(_buffer, "%f\r\n", voltage);
     command_complete(_buffer, strlen(_buffer));
 }
 

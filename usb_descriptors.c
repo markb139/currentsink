@@ -51,7 +51,7 @@ tusb_desc_device_t const desc_device =
 
     .bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
 
-    .idVendor           = 0xCafe,
+    .idVendor           = 0xcafe,
     .idProduct          = USB_PID,
     .bcdDevice          = 0x0100,
 
@@ -144,8 +144,8 @@ char const* string_desc_arr [] =
 {
   (const char[]) { 0x09, 0x04 }, // 0: is supported language is English (0x0409)
   "MarkB",                       // 1: Manufacturer
-  "Pico Logic",                  // 2: Product
-  "123456",                      // 3: Serials, should use chip ID
+  "Pico Current Sink",           // 2: Product
+  "1234",                        // 3: Serials, should use chip ID
   "MarkB USBTMC",                // 4: USBTMC
 };
 
