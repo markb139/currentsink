@@ -17,9 +17,10 @@ bool process_command(uint8_t* aData, size_t aLen)
     if(aLen == 0)
         return false;
 
+    _DBG_PRINT2("CMD: %s\n", aData);
     for(uint16_t i=0;i<CMDS;i++) {
         command_t cur = table[i];
-        _DBG_PRINT2("name %s\n", cur.name);
+        // _DBG_PRINT2("name %s\n", cur.name);
         if(!strncasecmp(cur.name, aData, strlen(cur.name))) {
             aData[aLen] = 0;
             cur.func(aData, aLen, strlen(cur.name));

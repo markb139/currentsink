@@ -7,7 +7,7 @@ static double _set_current=0.0;;
 
 char _buffer[32];
 
-static const char idn[] = "Rasp Pico CurrentSink,0.1,1000,v1.0\r\n";
+static const char idn[] = "Raspberry Pico,Current Load,1001,v1.0\r\n";
 static const char opc_1[] = "1\r\n";
 static const char opc_0[] = "0\r\n";
 static const char OK[] = "OK\r\n";
