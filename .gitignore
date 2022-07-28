@@ -11,6 +11,7 @@ CMakeCache.txt
 cmake_install.cmake
 generated/
 pico_sdk/
+pico-sdk/
 CMakeFiles/
 build/
 elf2uf2/
